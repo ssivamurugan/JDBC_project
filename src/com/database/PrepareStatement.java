@@ -17,6 +17,9 @@ public class PrepareStatement {
 	private static PreparedStatement preStatement;
 	private static int[] records;
 	private static Statement statement;
+	private static int[] insert;
+	private static int[] update;
+	private static int[] delete;
 
 	public static void main(String[] args) {
 		char charAt = '\u0000';
@@ -30,20 +33,20 @@ public class PrepareStatement {
 			System.out.println("To insert, update, delete (i, u, d): ");
 			charAt = scanner.nextLine().toLowerCase().charAt(0);
 			
-			while(charAt == 'y') {
+			while(charAt == 'i' || charAt == 'u' || charAt == 'd') {
 				
 				switch(charAt) {
 				
 				case 'i':
-					insert(connection);
+					insert = insert(connection);
 				break;
 				
 				case 'u':
-					update(connection);
+					update = update(connection);
 				break;
 				
 				case 'd':
-					delete(connection);
+					delete = delete(connection);
 				break;
 									
 					
@@ -54,14 +57,30 @@ public class PrepareStatement {
 				
 			}
 			
-			
-			if(preStatement != null) {
-				records = preStatement.executeBatch();
+			int insertLength = (insert == null)? 0 : insert.length;
+			int updateLength = (update == null)? 0 : update.length;
+			int deleteLength = (delete == null)? 0 : delete.length;
+			int totalLength = insertLength + updateLength + deleteLength;
+
+			records = new int[totalLength];
+			int index = 0;
+
+			for (int i = 0; i < insertLength; i++) {
+			    records[index++] = insert[i];
 			}
-			else {
-				System.out.println((records == null)? 0: records + " are affected.");
+
+			for (int i = 0; i < updateLength; i++) {
+			    records[index++] = update[i];
 			}
+
+			for (int i = 0; i < deleteLength; i++) {
+			    records[index++] = delete[i];
+			}
+
 			
+			for(int r : records) {
+				System.out.print(r + ",");
+			}
 			
 			System.out.println("Do you want to see table: (y/n)");
 			charAt = scanner.nextLine().toLowerCase().charAt(0);
@@ -88,7 +107,7 @@ public class PrepareStatement {
 				if(preStatement != null) {
 					preStatement.close();
 				}
-				else if(statement != null) {
+				if(statement != null) {
 					statement.close();
 				}
 			} catch (SQLException e) {
@@ -105,7 +124,7 @@ public class PrepareStatement {
 		
 	}
 
-	private static void delete(Connection connection2) throws SQLException {
+	private static int[] delete(Connection connection2) throws SQLException {
 		 preStatement = connection.prepareStatement(deleteQuery);
 		 char ch = '\u0000';
 		 String name = null;
@@ -120,10 +139,11 @@ public class PrepareStatement {
 			 System.out.println("Do you want to delete record again (y/n): ");
 			 ch = scanner.nextLine().toLowerCase().charAt(0);
 		 }while(ch == 'y');
+		 return preStatement.executeBatch();
 		
 	}
 
-	private static void update(Connection connection2) throws SQLException {
+	private static int[] update(Connection connection2) throws SQLException {
 		char ch = '\u0000';
 		String fieldName = null;
 		
@@ -136,7 +156,7 @@ public class PrepareStatement {
 			 System.out.println("Enter name of the student to update record: ");
 			 preStatement.setString(2, scanner.nextLine());
 			 
-			 if(fieldName.equals("id")|| fieldName.equals("age")) {
+			 if(fieldName.equals("s_id")|| fieldName.equals("age")) {
 				 System.out.println("Enter "+fieldName+" value to update: ");
 				 preStatement.setInt(1, scanner.nextInt());
 				 scanner.nextLine();
@@ -152,9 +172,10 @@ public class PrepareStatement {
 			 ch = scanner.nextLine().toLowerCase().charAt(0);
 		 }while(ch == 'y');
 		
+		 return preStatement.executeBatch();
 	}
 
-	private static void insert(Connection connection2) throws SQLException {
+	private static int[] insert(Connection connection2) throws SQLException {
 		 char ch = '\u0000';
 		 preStatement = connection.prepareStatement(insertQuery);
 		do {
@@ -178,6 +199,7 @@ public class PrepareStatement {
 			 System.out.println("Do you want to insert record again (y/n): ");
 			 ch = scanner.nextLine().toLowerCase().charAt(0);
 		 }while(ch == 'y');
+		return preStatement.executeBatch();
 		
 	}
 
