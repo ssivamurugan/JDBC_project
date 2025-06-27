@@ -15,7 +15,7 @@ public class PrepareStatement {
 	private static String insertQuery = "insert into `students`(`s_id`, `name`, `age`, `email`) values (?, ?, ?, ?)";
 	private static String deleteQuery = "delete from `students` where `name` = ? ";
 	private static PreparedStatement preStatement;
-	private static int records;
+	private static int[] records;
 	private static Statement statement;
 
 	public static void main(String[] args) {
@@ -30,7 +30,7 @@ public class PrepareStatement {
 			System.out.println("To insert, update, delete (i, u, d): ");
 			charAt = scanner.nextLine().toLowerCase().charAt(0);
 			
-			do {
+			while(charAt == 'y') {
 				
 				switch(charAt) {
 				
@@ -52,10 +52,15 @@ public class PrepareStatement {
 				System.out.println("To insert, update, delete (i, u, d): ");
 				charAt = scanner.nextLine().toLowerCase().charAt(0);
 				
-			}while(charAt == 'y');
+			}
 			
 			
-			System.out.println(records + " are affected.");
+			if(preStatement != null) {
+				records = preStatement.executeBatch();
+			}
+			else {
+				System.out.println((records == null)? 0: records + " are affected.");
+			}
 			
 			
 			System.out.println("Do you want to see table: (y/n)");
@@ -110,7 +115,7 @@ public class PrepareStatement {
 			 
 			 preStatement.setString(1, name);
 			 
-			 records += preStatement.executeUpdate();
+			 preStatement.addBatch();
 			 
 			 System.out.println("Do you want to delete record again (y/n): ");
 			 ch = scanner.nextLine().toLowerCase().charAt(0);
@@ -141,7 +146,7 @@ public class PrepareStatement {
 				 preStatement.setString(1, scanner.nextLine());
 			 }
 			 
-			 records  += preStatement.executeUpdate();
+			 preStatement.addBatch();
 			 
 			 System.out.println("Do you want to update record again (y/n): ");
 			 ch = scanner.nextLine().toLowerCase().charAt(0);
@@ -168,7 +173,7 @@ public class PrepareStatement {
 			 System.out.println("Enter the email: ");
 			 preStatement.setString(4, scanner.nextLine());
 			 
-			 records  += preStatement.executeUpdate();
+			 preStatement.addBatch();
 			 
 			 System.out.println("Do you want to insert record again (y/n): ");
 			 ch = scanner.nextLine().toLowerCase().charAt(0);
